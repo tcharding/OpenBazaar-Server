@@ -43,3 +43,7 @@ Various options, including those related to logging and debugging, can be displa
 python openbazaard.py start --help
 ```
 
+Make and run unit-tests with
+```bash
+make
+```
