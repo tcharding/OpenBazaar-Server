@@ -31,6 +31,7 @@ def is_osx():
 
 
 def options_tmp_path():
+    # FIXME Unix only
     return '/tmp/' + OPTIONS_TMP_FILE
 
 
@@ -57,8 +58,6 @@ def home_path():
     error += ', please report this to OpenBazaar so we can fix it.'
     error += '  Thank you for your patience.'
     raise RuntimeError(error)
-
-
 
 
 if __name__ == '__main__':
