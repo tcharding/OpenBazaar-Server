@@ -23,7 +23,7 @@ for i in range(2):
 
 DEFAULTS = {
     # Default project config file may now remove these items
-    'data_folder': 'OpenBazaar',  # FIXME change to 'None' when issue #163 is resolved
+    'data_folder': None,
     'ksize': '20',
     'alpha': '3',
     'transaction_fee': '10000',
