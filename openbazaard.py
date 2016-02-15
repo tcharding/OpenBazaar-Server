@@ -8,6 +8,13 @@ from os.path import isfile
 from ConfigParser import ConfigParser, NoSectionError
 
 from utils.platform_independent import tmp_config_path, ordered_config_files
+#
+# If you import anything else here from OB it breaks Parser()
+#
+# There is a temporal coupling between OB imports and Parser.
+# Parser() must complete before any other OB imports so that the system wide
+# tmp config file has been written
+#
 
 
 PROTOCOL_VERSION = 13
@@ -140,6 +147,6 @@ def _set_cfg_options(cfg, options):
 
 if __name__ == "__main__":
     Parser()
-    from daemon import run      # daemon relies on Parser() 
+    from daemon import run      # daemon relies on Parser() having completed
     run()
 
