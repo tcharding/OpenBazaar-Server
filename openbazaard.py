@@ -2,17 +2,15 @@
 __author__ = 'chris', 'tobin'
 
 import argparse
-import sys
-import requests
 from os.path import isfile
 from ConfigParser import ConfigParser, NoSectionError
 
 from utils.platform_independent import tmp_config_path, ordered_config_files
 #
-# If you import anything else here from OB it breaks Parser()
+# If you import anything else here from OB it breaks _parse_command_line()
 #
-# There is a temporal coupling between OB imports and Parser.
-# Parser() must complete before any other OB imports so that the system wide
+# There is a temporal coupling between OB imports and parsing the command line.
+# Parsing must complete before any other OB imports so that the system wide
 # tmp config file has been written
 #
 
@@ -42,34 +40,32 @@ DEFAULTS = {
 }
 
 
-class Parser(object):
-    def __init__(self):
-#        self.daemon = OpenBazaard()
-        parser = argparse.ArgumentParser(
-            description='OpenBazaar-Server v0.1.0',
-            usage='python openbazaard.py  [<args>]')
+def _parse_command_line():
+    parser = argparse.ArgumentParser(
+        description='OpenBazaar-Server v0.1.0',
+        usage='python openbazaard.py  [<args>]')
 
-        parser.add_argument('-t', '--testnet', action='store_true',
-                            help="use the test network")
-        parser.add_argument('-s', '--ssl', action='store_true',
-                            help="use ssl on api connections. you must set the path to your "
-                                 "certificate and private key in the config file.")
-        parser.add_argument('-l', '--loglevel',
-                            help="set the logging level [debug, info, warning, error, critical]")
-        parser.add_argument('-p', '--network_port',
-                            help="set the network port")
-        parser.add_argument('-r', '--restapi_port',
-                            help="set the rest api port")
-        parser.add_argument('-w', '--websocket_port',
-                            help="set the websocket api port")
-        parser.add_argument('-b', '--heartbeat_port',
-                            help="set the heartbeat port")
-        parser.add_argument('-a', '--allowip',
-                            help="only allow api connections from this ip")
+    parser.add_argument('-t', '--testnet', action='store_true',
+                        help="use the test network")
+    parser.add_argument('-s', '--ssl', action='store_true',
+                        help="use ssl on api connections. you must set the path to your "
+                             "certificate and private key in the config file.")
+    parser.add_argument('-l', '--loglevel',
+                        help="set the logging level [debug, info, warning, error, critical]")
+    parser.add_argument('-p', '--network_port',
+                        help="set the network port")
+    parser.add_argument('-r', '--restapi_port',
+                        help="set the rest api port")
+    parser.add_argument('-w', '--websocket_port',
+                        help="set the websocket api port")
+    parser.add_argument('-b', '--heartbeat_port',
+                        help="set the heartbeat port")
+    parser.add_argument('-a', '--allowip',
+                        help="only allow api connections from this ip")
 
-        args = parser.parse_args()
-        options = _dict_from_args(args)
-        _store_config_with_options(options)
+    args = parser.parse_args()
+    options = _dict_from_args(args)
+    _store_config_with_options(options)
 
 
 def _dict_from_args(args):
@@ -126,6 +122,7 @@ def _parse_config_files(cfg):
     for config_file in config_files:
         if config_file and isfile(config_file):
             cfg.read(config_file)
+#            print 'DEBUG: cfg read: %s' % config_file
     return cfg
 
 
@@ -146,7 +143,7 @@ def _set_cfg_options(cfg, options):
 
 
 if __name__ == "__main__":
-    Parser()
+    _parse_command_line()
     from daemon import run      # daemon relies on Parser() having completed
     run()
 

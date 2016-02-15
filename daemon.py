@@ -29,11 +29,10 @@ from net.sslcontext import ChainedOpenSSLContextFactory
 from net.upnp import PortMapper
 from net.utils import looping_retry
 from net.wireprotocol import OpenBazaarProtocol
-from utils.platform_independent import pid_path
 from config import DATA_FOLDER, KSIZE, ALPHA, LIBBITCOIN_SERVER,\
     LIBBITCOIN_SERVER_TESTNET, SSL_KEY, SSL_CERT, SEEDS, TESTNET,\
     LOGLEVEL, NETWORK_PORT, ALLOWIP, SSL, RESTAPI_PORT, WEBSOCKET_PORT,\
-    HEARTBEAT_PORT, DAEMON, PIDFILE
+    HEARTBEAT_PORT, DAEMON
 
 
 def run(*args):

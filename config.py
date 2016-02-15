@@ -87,13 +87,6 @@ TESTNET = str_to_bool(cfg.get('CONSTANTS', 'TESTNET'))
 DAEMON = str_to_bool(cfg.get('CONSTANTS', 'DAEMON'))
 ALLOWIP = cfg.get('CONSTANTS', 'ALLOWIP')
 
-user_defined_pidfile = cfg.get('CONSTANTS', 'PIDFILE')
-PIDFILE = ''
-if user_defined_pidfile:
-    PIDFILE = user_defined_pidfile
-else:
-    PIDFILE = pid_path()
-
 NETWORK_PORT = 0
 user_defined_network_port = int(cfg.get('CONSTANTS', 'NETWORK_PORT'))
 if user_defined_network_port:

@@ -5,6 +5,9 @@ import os
 from os.path import expanduser, join, isfile
 from platform import platform
 import tempfile
+#
+# If you import anything here from OB it breaks Parser() see openbazaard.py
+#
 
 CONFIG = 'tmp_config.ini'       # file created by running OB instance
 CONFIG_FILE = 'ob.cfg'
@@ -109,9 +112,12 @@ def ordered_config_files():
 
 
 def _locate_config_file():
+    """Find the git repository config file.q"""
 # FIXME probably a better way to do this. This curretly checks two levels deep
     config_file = CONFIG_FILE
-    for i in range(2):
+    for _ in range(2):
         if not isfile(config_file):
             paths = config_file.rsplit('/', 2)
             config_file = join(paths[0], paths[2])
+
+    return config_file
