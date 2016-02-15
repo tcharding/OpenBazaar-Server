@@ -1,10 +1,13 @@
 """Platform independent utility functions."""
 __author__ = 'tobin'
 
-from os import environ
-from os.path import expanduser, join
+import os
+from os.path import expanduser, join, isfile
 from platform import platform
 import tempfile
+
+CONFIG = 'tmp_config.ini'       # file created by running OB instance
+CONFIG_FILE = 'ob.cfg'
 
 def is_windows():
     """Are we on a Windows platform."""
@@ -37,7 +40,7 @@ def home_path():
     """Determine system home path."""
     path = ''
     if is_windows():
-        path = environ['HOMEPATH']
+        path = os.environ['HOMEPATH']
     else:
         path = expanduser('~')
 
@@ -77,3 +80,38 @@ def pid_path():
     tmp_dir = tempfile.gettempdir()
     return join(tmp_dir, 'openbazaard.pid')
 
+
+def tmp_config_path():
+    """Return path for config database."""
+    return join(data_path(), CONFIG)
+
+
+def ordered_config_files():
+    """Return list of config files to be passed in order."""
+    system = ''                 # system wide file
+    home_file = ''              # home directory config file
+    data_folder_file = ''       # config file in DATA_FOLDER
+    ob_file = _locate_config_file()
+
+    if is_linux:
+        system = '/etc/openbazaar.conf'
+        home_file = join(expanduser('~'), '.openbazaar.conf')
+        data_folder_file = join(data_path(), 'openbazaar.conf')
+    elif is_osx:
+        system = '/etc/openbazaar.conf'
+#        home_file = '' We can't have this until we have an XML version of the config file
+        data_folder_file = join(data_path(), 'openbazaar.conf')
+    elif is_windows:
+        # if windows users run a pre-built executable ob.cfg will suffice
+        pass
+
+    return [system, home_file, data_folder_file, ob_file]
+
+
+def _locate_config_file():
+# FIXME probably a better way to do this. This curretly checks two levels deep
+    config_file = CONFIG_FILE
+    for i in range(2):
+        if not isfile(config_file):
+            paths = config_file.rsplit('/', 2)
+            config_file = join(paths[0], paths[2])

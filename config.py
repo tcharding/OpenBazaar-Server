@@ -7,51 +7,17 @@ from os.path import join, isfile
 from ConfigParser import ConfigParser
 from urlparse import urlparse
 
-from utils.platform_independent import data_path, options_tmp_path,\
-    pid_path
-form utils.string import str_to_bool
+from utils.platform_independent import data_path, tmp_config_path
+from utils.string import str_to_bool
 
 PROTOCOL_VERSION = 13
-CONFIG_FILE = join(os.getcwd(), 'ob.cfg')
+
 MAINNET_PORT = 18467
 TESTNET_PORT = 28467
 
-# FIXME probably a better way to do this. This curretly checks two levels deep
-for i in range(2):
-    if not isfile(CONFIG_FILE):
-        paths = CONFIG_FILE.rsplit('/', 2)
-        CONFIG_FILE = join(paths[0], paths[2])
-
-DEFAULTS = {
-    'data_folder': None,
-    'ksize': '20',
-    'alpha': '3',
-    'transaction_fee': '10000',
-    'libbitcoin_server': 'tcp://libbitcoin1.openbazaar.org:9091',
-    'libbitcoin_server_testnet': 'tcp://libbitcoin2.openbazaar.org:9091',
-    'resolver': 'http://resolver.onename.com/',
-    'loglevel': 'info',
-    'testnet': 'True',
-    'daemon': 'False',
-    'network_port': '0',
-    'websocket_port': '18466',
-    'restapi_port': '18469',
-    'heartbeat_port': '18470',
-    'allowip' : '127.0.0.1',
-    'pidfile' : None,
-
-    # Authentication
-    'ssl': 'False',
-    'ssl_cert': None,
-    'ssl_key': None,
-    'username': None,
-    'password': None,
-    #seeds
-    'seed': 'seed.openbazaar.org:8080,5b44be5c18ced1bc9400fe5e79c8ab90204f06bebacc04dd9c70a95eaca6e117',
-}
-
 def _is_well_formed_seed_string(string):
     """Parse string url:port,key."""
+    print string
     if ',' in string:
         url, key = string.split(',')
         parsed = urlparse(url)
@@ -94,16 +60,14 @@ def _is_well_formed_data_path(path):
     return False
 
 
-cfg = ConfigParser(DEFAULTS)
+cfg = ConfigParser()
+tmp_config = tmp_config_path()
 
-if isfile(CONFIG_FILE):
-    cfg.read(CONFIG_FILE)
+if isfile(tmp_config):
+    cfg.read(tmp_config)
 else:
-    print 'Warning: configuration file not found: (%s), using default values' % CONFIG_FILE
-
-options = options_tmp_path()
-if isfile(options):
-    cfg.read(options)
+    print 'Error: temp config file %s not found in user data directory' % tmp_config
+    exit(1)
 
 DATA_FOLDER = ''
 config_data_path = cfg.get('CONSTANTS', 'DATA_FOLDER')
@@ -129,7 +93,7 @@ if user_defined_pidfile:
     PIDFILE = user_defined_pidfile
 else:
     PIDFILE = pid_path()
-    
+
 NETWORK_PORT = 0
 user_defined_network_port = int(cfg.get('CONSTANTS', 'NETWORK_PORT'))
 if user_defined_network_port:
@@ -149,24 +113,16 @@ USERNAME = cfg.get('AUTHENTICATION', 'USERNAME')
 PASSWORD = cfg.get('AUTHENTICATION', 'PASSWORD')
 
 SEEDS = []
-
 items = cfg.items('SEEDS')  # this also includes items in DEFAULTS
 for item in items:
     if _is_seed_tuple(item):
-        seed_string = item[1]
-        if _is_well_formed_seed_string(seed_string):
-            new_seed = _tuple_from_seed_string(seed_string)
+        seed = item[1]
+        if _is_well_formed_seed_string(seed):
+            new_seed = _tuple_from_seed_string(seed)
             if new_seed not in SEEDS:
                 SEEDS.append(new_seed)
         else:
-            print 'Warning: please check your configuration file: %s' % seed_string
-
-
-def get_value(section, name):
-    config = ConfigParser()
-    if isfile(CONFIG_FILE):
-        config.read(CONFIG_FILE)
-        return config.get(section, name)
+            print 'Warning: please check your configuration file: %s' % seed
 
 
 if __name__ == '__main__':
