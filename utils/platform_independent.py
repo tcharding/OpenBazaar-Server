@@ -91,29 +91,31 @@ def tmp_config_path():
 
 def ordered_config_files():
     """Return list of config files to be passed in order."""
-    system = ''                 # system wide file
-    home_file = ''              # home directory config file
-    data_folder_file = ''       # config file in DATA_FOLDER
-    ob_file = _locate_config_file()
+    ordered = []
 
     if is_linux:
         system = '/etc/openbazaar.conf'
         home_file = join(expanduser('~'), '.openbazaar.conf')
         data_folder_file = join(data_path(), 'openbazaar.conf')
+        ordered.extend([system, home_file, data_folder_file])
     elif is_osx:
         system = '/etc/openbazaar.conf'
 #        home_file = '' We can't have this until we have an XML version of the config file
         data_folder_file = join(data_path(), 'openbazaar.conf')
+        ordered.extend([system, data_folder_file])
     elif is_windows:
         # if windows users run a pre-built executable ob.cfg will suffice
         pass
 
-    return [system, home_file, data_folder_file, ob_file]
+    return ordered
 
 
-def _locate_config_file():
-    """Find the git repository config file.q"""
-# FIXME probably a better way to do this. This curretly checks two levels deep
+def ob_repo_config_file():
+    """
+    Find the git repository config file.
+    
+    We are doing this 2 level hack so the test suite can find the config file.
+    """
     config_file = CONFIG_FILE
     for _ in range(2):
         if not isfile(config_file):

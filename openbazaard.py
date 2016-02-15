@@ -13,8 +13,6 @@ from utils.platform_independent import tmp_config_path, ordered_config_files
 # Parsing must complete before any other OB imports so that the system wide
 # tmp config file has been written
 #
-
-
 PROTOCOL_VERSION = 13
 
 MAINNET_PORT = 18467
@@ -30,13 +28,11 @@ DEFAULTS = {
     'resolver': 'http://resolver.onename.com/',
     'loglevel': 'info',
     'testnet': 'True',
-    'daemon': 'False',
     'network_port': '0',
     'websocket_port': '18466',
     'restapi_port': '18469',
     'heartbeat_port': '18470',
     'allowip' : '127.0.0.1',
-    'pidfile' : None,
 }
 
 
@@ -45,23 +41,25 @@ def _parse_command_line():
         description='OpenBazaar-Server v0.1.0',
         usage='python openbazaard.py  [<args>]')
 
-    parser.add_argument('-t', '--testnet', action='store_true',
+    # Remove short form options to conform to Unix semantic standards.
+    # Ref: The Art of UNIX Programming - Eric S. Raymond (section 10.5.1)
+    parser.add_argument('--testnet', action='store_true',
                         help="use the test network")
-    parser.add_argument('-s', '--ssl', action='store_true',
+    parser.add_argument('--ssl', action='store_true',
                         help="use ssl on api connections. you must set the path to your "
                              "certificate and private key in the config file.")
-    parser.add_argument('-l', '--loglevel',
+    parser.add_argument('--loglevel',
                         help="set the logging level [debug, info, warning, error, critical]")
     parser.add_argument('-p', '--network_port',
                         help="set the network port")
-    parser.add_argument('-r', '--restapi_port',
+    parser.add_argument('--restapi_port',
                         help="set the rest api port")
-    parser.add_argument('-w', '--websocket_port',
+    parser.add_argument('--websocket_port',
                         help="set the websocket api port")
-    parser.add_argument('-b', '--heartbeat_port',
+    parser.add_argument('--heartbeat_port',
                         help="set the heartbeat port")
-    parser.add_argument('-a', '--allowip',
-                        help="only allow api connections from this ip")
+    parser.add_argument('--allowip',
+                        help="only allow api connections from this IP")
 
     args = parser.parse_args()
     options = _dict_from_args(args)
@@ -95,6 +93,7 @@ def _cfg_with_options(options):
 
 
 def _initialise_cfg():
+    """Make sure we have all the sections we need."""
     cfg = ConfigParser(DEFAULTS)
     cfg.add_section('CONSTANTS')
     cfg.add_section('SEEDS')
@@ -103,26 +102,25 @@ def _initialise_cfg():
     return cfg
 
 
-def _setup_auth_section(cfg):
-    section = 'AUTHENTICATION'
-    cfg.add_section(section)
-    cfg.set(section, 'ssl', False)
-    cfg.set(section, 'ssl_cert', None)
-    cfg.set(section, 'ssl_key', None)
-    cfg.set(section, 'username', None)
-    cfg.set(section, 'password', None)
-
-    return cfg
-
-
 def _parse_config_files(cfg):
-    """Parse config file hierarchy."""
+    """
+    Parse config file hierarchy.
+    
+    We look for config files according to platform methodologies. If, and only
+    if, none are found then we parse the config file from the OpenBazaar github
+    repository (i.e the file in the same directory as the executable.)
+    """
     config_files = ordered_config_files()
+    config_file_found = False
 
     for config_file in config_files:
         if config_file and isfile(config_file):
             cfg.read(config_file)
-#            print 'DEBUG: cfg read: %s' % config_file
+            config_file_found = True
+
+    if not config_file_found:
+        cfg.read(ob_repo_config_file())
+        
     return cfg
 
 
@@ -142,8 +140,21 @@ def _set_cfg_options(cfg, options):
     return cfg
 
 
+def _setup_auth_section(cfg):
+    """Add section and also add (set) options."""
+    section = 'AUTHENTICATION'
+    cfg.add_section(section)
+    cfg.set(section, 'ssl', False)
+    cfg.set(section, 'ssl_cert', None)
+    cfg.set(section, 'ssl_key', None)
+    cfg.set(section, 'username', None)
+    cfg.set(section, 'password', None)
+
+    return cfg
+
+
 if __name__ == "__main__":
     _parse_command_line()
-    from daemon import run      # daemon relies on Parser() having completed
+    from run import run      # daemon relies on Parser() having completed
     run()
 
