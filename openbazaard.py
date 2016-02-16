@@ -11,7 +11,8 @@ import urllib2
 from api.ws import WSFactory, AuthenticatedWebSocketProtocol, AuthenticatedWebSocketFactory
 from api.restapi import RestAPI
 from config import DATA_FOLDER, KSIZE, ALPHA, LIBBITCOIN_SERVER,\
-    LIBBITCOIN_SERVER_TESTNET, SSL_KEY, SSL_CERT, SEEDS, SSL
+    LIBBITCOIN_SERVER_TESTNET, SSL_KEY, SSL_CERT, SEEDS, SSL,\
+    TESTNET, LOGLEVEL, PORT, ALLOWIP, WSPORT, HEARTBEATPORT
 from daemon import Daemon
 from db.datastore import Database
 from dht.network import Server
@@ -36,14 +37,8 @@ from twisted.python import log, logfile
 from txws import WebSocketFactory
 
 
-def run(*args):
-    TESTNET = args[0]
-    LOGLEVEL = args[1]
-    PORT = args[2]
-    ALLOWIP = args[3]
-    RESTPORT = args[4]
-    WSPORT = args[5]
-    HEARTBEATPORT = args[6]
+def run():
+    start_time = time.time()
 
     def start_server(keys, first_startup=False):
         # logging
@@ -158,7 +153,7 @@ def run(*args):
 
         heartbeat_server.set_status("online")
 
-        logger.info("Startup took %s seconds" % str(round(time.time() - args[7], 2)))
+        logger.info("Startup took %s seconds" % str(round(time.time() - start_time, 2)))
 
     # database
     db = Database(TESTNET)
@@ -215,15 +210,6 @@ commands:
             )
             parser.add_argument('-d', '--daemon', action='store_true',
                                 help="run the server in the background as a daemon")
-            parser.add_argument('-t', '--testnet', action='store_true', help="use the test network")
-            parser.add_argument('-l', '--loglevel', default="info",
-                                help="set the logging level [debug, info, warning, error, critical]")
-            parser.add_argument('-p', '--port', help="set the network port")
-            parser.add_argument('-a', '--allowip', default="127.0.0.1",
-                                help="only allow api connections from this ip")
-            parser.add_argument('-r', '--restapiport', help="set the rest api port", default=18469)
-            parser.add_argument('-w', '--websocketport', help="set the websocket api port", default=18466)
-            parser.add_argument('-b', '--heartbeatport', help="set the heartbeat port", default=18470)
             parser.add_argument('--pidfile', help="name of the pid file", default="openbazaard.pid")
             args = parser.parse_args(sys.argv[2:])
 
@@ -243,19 +229,11 @@ commands:
 
             unix = ("linux", "linux2", "darwin")
 
-            if args.port:
-                port = int(args.port)
-            else:
-                port = 18467 if not args.testnet else 28467
             if args.daemon and platform.system().lower() in unix:
                 self.daemon.pidfile = "/tmp/" + args.pidfile
-                self.daemon.start(args.testnet, args.loglevel, port, args.allowip,
-                                  int(args.restapiport), int(args.websocketport),
-                                  int(args.heartbeatport), time.time())
+                self.daemon.start()
             else:
-                run(args.testnet, args.loglevel, port, args.allowip,
-                    int(args.restapiport), int(args.websocketport),
-                    int(args.heartbeatport), time.time())
+                run()
 
         def stop(self):
             # pylint: disable=W0612
