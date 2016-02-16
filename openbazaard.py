@@ -156,10 +156,10 @@ def run():
         logger.info("Startup took %s seconds" % str(round(time.time() - start_time, 2)))
 
     # database
-    db = Database(TESTNET)
+    db = Database()
 
     # client authentication
-    username, password = get_credentials(db)
+    username, password = get_credentials()
 
     # heartbeat server
     interface = "0.0.0.0" if ALLOWIP not in ("127.0.0.1", "0.0.0.0") else ALLOWIP
