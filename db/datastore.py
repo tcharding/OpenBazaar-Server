@@ -839,9 +839,7 @@ def _initialize_database(database):
 
 
 def _initialize_datafolder_tree():
-    '''
-    Creates, if not present, directory tree in DATA_FOLDER.
-    '''
+    """Creates, if not present, directory tree in DATA_FOLDER."""
     tree = [
         ['cache'],
         ['store', 'contracts', 'listings'],
