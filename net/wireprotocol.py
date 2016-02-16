@@ -36,7 +36,6 @@ class OpenBazaarProtocol(ConnectionMultiplexer):
                 ip_address: a `tuple` of the (ip address, port) of ths node.
         """
         self.ip_address = ip_address
-        self.testnet = testnet
         self.ws = None
         self.blockchain = None
         self.processors = []

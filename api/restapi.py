@@ -18,7 +18,8 @@ from twisted.internet import defer, reactor, task
 from twisted.protocols.basic import FileSender
 
 from config import DATA_FOLDER, RESOLVER, LIBBITCOIN_SERVER_TESTNET, LIBBITCOIN_SERVER, \
-    set_value, get_value, str_to_bool
+    ALLOWIP, set_value, get_value, str_to_bool
+    
 from protos.countries import CountryCode
 from protos import objects
 from keys import blockchainid
@@ -28,6 +29,7 @@ from dht.utils import digest
 from market.profile import Profile
 from market.contracts import Contract
 from net.upnp import PortMapper
+from db.datastore import Database
 
 DEFAULT_RECORDS_COUNT = 20
 DEFAULT_RECORDS_OFFSET = 0
@@ -63,7 +65,7 @@ class OpenBazaarAPI(APIResource):
         self.kserver = kserver
         self.protocol = protocol
         self.db = Database()
-        self.keychain = KeyChain(self.db)
+        self.keychain = KeyChain()
         self.authenticated_sessions = authenticated_sessions
         self.failed_login_attempts = {}
 
@@ -1306,8 +1308,8 @@ class OpenBazaarAPI(APIResource):
 class RestAPI(Site):
 
     def __init__(self, mserver, kserver, openbazaar_protocol,
-                 authenticated_sessions, only_ip="127.0.0.1", timeout=60 * 60 * 1):
-        self.only_ip = only_ip
+                 authenticated_sessions, timeout=60 * 60 * 1):
+        self.only_ip = ALLOWIP
         api_resource = OpenBazaarAPI(mserver, kserver, openbazaar_protocol,
                                      authenticated_sessions)
         Site.__init__(self, api_resource, timeout=timeout)
